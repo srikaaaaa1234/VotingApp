@@ -15,7 +15,6 @@ import {
   Input,
 } from "reactstrap";
 import { IoMdAdd } from "react-icons/io";
-import BaseForm from "./BaseForm";
 function Vote() {
 
   //**** Axios Start ****// 
@@ -28,129 +27,151 @@ function Vote() {
   axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
   //**** Axios End ****// 
- 
-  const [modal, setModal] = useState(false);
-  const [candidateList,setcandidateList] = useState([]);
-  const [voterList,setVoterList] = useState([]);
 
-  const [selectedcandidate,setSelectedcandidate] = useState({id:0,name:""});
-  const [selectedVoter,setSelctedVoter] = useState({id:0,name:""});
+  const [modal, setModal] = useState(false);
+  const [candidateList, setcandidateList] = useState([]);
+  const [voterList, setVoterList] = useState([]);
+  const [voteList, setVoteList] = useState([]);
+
+  const [selectedcandidate, setSelectedcandidate] = useState({ id: 0, name: "" });
+  const [selectedVoter, setselectedVoter] = useState({ id: 0, name: "" });
+  const [vote, setVote] = useState({ voterId: 0, candidateId: 0 });
 
   const [modalCandidate, setmodalCandidate] = useState(false);
-  const toggle = () => setModal(!modal);
-  const toggle1 = () => setmodalCandidate(!modalCandidate);
+  const toggle_Voter = () => setModal(!modal);
+  const toggle_candidate = () => setmodalCandidate(!modalCandidate);
 
 
   //**** API Start ****// 
 
-  const GetCandidates = async ()=>{
+  const GetCandidates = async () => {
     let res = await axios.get("/candidate")
-    setVoterList(res.data.data)
+    setcandidateList(res.data.data)
+
   }
 
-  const GetVoters = async ()=>{
+  const GetVoters = async () => {
     let res = await axios.get("/voter")
-    setcandidateList(res.data.data)
+    setVoterList(res.data.data)
+
   }
 
-  const AddVoter = async ()=>{
-    let res = await axios.post("/voter",selctedVoter)
-    setcandidateList(res.data.data)
+  const GetVote = async () => {
+    let res = await axios.get("/vote")
+    setVoteList(res.data.data)
+    console.table(res.data.data)
+    debugger
   }
 
-  const AddCandidate = async ()=>{
-    let res = await axios.post("/candidate",selctedVoter)
-    setcandidateList(res.data.data)
+  const AddVoter = async () => {
+    let res = await axios.post("/voter", selectedVoter)
+    debugger
+    setVoterList([...voterList, res.data.data])
+    alert('Voter Added.')
+    toggle_Voter()
+
+  }
+
+  const AddVote = async () => {
+
+    if (!vote.voterId) {
+      alert("Please Select Voter!")
+      return;
+
+    }
+    if (!vote.candidateId) {
+      alert("Please Select Candidate!")
+      return;
+
+    }
+
+    let res = await axios.post("/vote", vote)
+    debugger
+    setVoteList([...voteList,res.data.data])
+    alert(voterList.find(x => x.id == vote.voterId).name + ' Voted For ' + candidateList.find(x => x.id == vote.candidateId).name)
+  }
+
+  const AddCandidate = async () => {
+    let res = await axios.post("/candidate", selectedcandidate)
+    setcandidateList([...candidateList, res.data.data])
+    alert('Candidate Added.')
+    toggle_candidate()
+
   }
 
   //**** API End ****// 
 
-  useEffect(()=>{
+  useEffect(() => {
     GetCandidates()
     GetVoters()
-  },[])
+    GetVote()
+  }, [])
 
   return (
     <section>
-      <Modal isOpen={modal} toggle={toggle}>
-        <ModalHeader toggle={toggle}>Add Voter</ModalHeader>
+      <Modal isOpen={modal} toggle={toggle_Voter}>
+        <ModalHeader toggle={toggle_Voter}>Add Voter</ModalHeader>
         <ModalBody>
           <Label for="exampleEmail">Voter Name</Label>
           <Input
-          onChange={(e)=>{setSelctedVoter({id:0,name:e.target.value})}}
-          value={selectedVoter.name}
+            onChange={(e) => { setselectedVoter({ id: 0, name: e.target.value }) }}
+            value={selectedVoter.name}
             placeholder="Enter Voter Name"
             type="text"
           />
         </ModalBody>
         <ModalFooter>
-          <Button color="primary" onClick={toggle}>
+          <Button color="primary" onClick={AddVoter}>
             Submit
           </Button>{" "}
-          <Button color="secondary" onClick={toggle}>
+          <Button color="secondary" onClick={toggle_Voter}>
             Cancel
           </Button>
         </ModalFooter>
       </Modal>
-      <Modal isOpen={modalCandidate} toggle={toggle1}>
-        <ModalHeader toggle={toggle1}>Modal title</ModalHeader>
+      <Modal isOpen={modalCandidate} toggle={toggle_candidate}>
+        <ModalHeader toggle={toggle_candidate}>Modal title</ModalHeader>
         <ModalBody>
           <Label for="exampleEmail">Candidate Name</Label>
           <Input
-             onChange={(e)=>{setSelectedcandidate({id:0,name:e.target.value})}}
-             value={selectedcandidate.name}
+            onChange={(e) => { setSelectedcandidate({ id: 0, name: e.target.value }) }}
+            value={selectedcandidate.name}
             placeholder="Enter Candidate Name"
             type="text"
           />
         </ModalBody>
         <ModalFooter>
-          <Button color="primary" onClick={toggle1}>
+          <Button color="primary" onClick={AddCandidate}>
             Submit
           </Button>{" "}
-          <Button color="secondary" onClick={toggle1}>
+          <Button color="secondary" onClick={toggle_candidate}>
             Cancel
           </Button>
         </ModalFooter>
       </Modal>
       <Container className="mt-4">
         <Row>
-          <Col className="bg-light border" md="6">
+          <Col className="bg-light border pt-3" md="6">
             <Table bordered>
               <thead>
                 <tr>
-                  <th colSpan={2}>
-                    Voters <IoMdAdd onClick={toggle} />
+                  <th colSpan={3}>
+
+                    Voters
+                    <span
+                      style={{ float: 'right' }}
+                      className="text-danger text-right"
+
+                    >
+                      <IoMdAdd className="text-danger" onClick={toggle_Voter} />
+
+                    </span>
                   </th>
                 </tr>
                 <tr>
+                  <th>Id</th>
                   <th>Name</th>
                   <th>Has Voted</th>
-                </tr>
-              </thead>
-              <tbody>
-                {candidateList.map((item, index) => (
-                  <tr key={index}>
-                    <td>{item.id}</td>
-                    <td>{item.name}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Col>
-          <Col className="bg-light border" md="6">
-            <Table bordered>
-              <thead>
-                <tr>
-                  <th colSpan={2}>
-                    Candidates{" "}
-                    <IoMdAdd
-                     onClick={toggle1}
-                    />  
-                  </th>
-                </tr>
-                <tr>
-                  <th>Name</th>
-                  <th>Votes</th>
                 </tr>
               </thead>
               <tbody>
@@ -158,14 +179,88 @@ function Vote() {
                   <tr key={index}>
                     <td>{item.id}</td>
                     <td>{item.name}</td>
+                    <td>{voteList.some(x => x.voterId == item.id) ? "Yes" : "No"}</td>
                   </tr>
                 ))}
               </tbody>
             </Table>
           </Col>
+          <Col className="bg-light border pt-3" md="6">
+            <Table bordered>
+              <thead>
+                <tr>
+                  <th colSpan={3}>
+                    Candidates{" "}
+                    <span
+                      style={{ float: 'right' }}
+                      className="text-danger text-right"
+
+                    >
+
+                      <IoMdAdd
+                        onClick={toggle_candidate}
+                      />
+                    </span>
+
+                  </th>
+                </tr>
+                <tr>
+                  <th>Id</th>
+
+                  <th>Name</th>
+                  <th>Votes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {candidateList.map((item, index) => {
+                  debugger
+                  return (
+                    <tr key={index}>
+                      <td>{item.id}</td>
+                      <td>{item.name}</td>
+                      <td>{voteList.filter(x => x.candidateId == item.id).length
+                      }</td>
+                    </tr>
+                  )
+                }
+                )}
+              </tbody>
+            </Table>
+          </Col>
         </Row>
-        
-            <BaseForm></BaseForm>
+
+        <Row className='mt-4'>
+          <Col md="5" >
+            <select
+              onChange={(e) => { setVote({ voterId: e.target.value, candidateId: vote.candidateId }) }}
+              value={vote.voterId}
+              className='form-control' >
+
+              <option value={0}>I am</option>
+              {voterList.map((item, i) => (
+                <option key={item.id} value={item.id} >{item.name}</option>
+              ))}
+            </select>
+          </Col>
+          <Col md="5" >
+            <select
+              onChange={(e) => {
+                debugger
+                setVote({ voterId: vote.voterId, candidateId: e.target.value })
+              }}
+              value={vote.candidateId}
+              className='form-control'>
+              <option value={0} >I Vote for</option>
+              {candidateList.map((item, i) => (
+                <option key={item.id} value={item.id} >{item.name}</option>
+              ))}
+            </select>
+          </Col>
+          <Col md="2" >
+
+            <Button onClick={e => { AddVote() }} type='button'>Submit</Button>
+          </Col>
+        </Row>
       </Container>
     </section>
   );
