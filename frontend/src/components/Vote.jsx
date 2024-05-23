@@ -30,11 +30,18 @@ function Vote() {
   //**** Axios End ****// 
  
   const [modal, setModal] = useState(false);
-  const [candidaetList,setCandidaetList] = useState([]);
+  const [candidateList,setcandidateList] = useState([]);
   const [voterList,setVoterList] = useState([]);
+
+  const [selectedcandidate,setSelectedcandidate] = useState({id:0,name:""});
+  const [selectedVoter,setSelctedVoter] = useState({id:0,name:""});
+
   const [modalCandidate, setmodalCandidate] = useState(false);
   const toggle = () => setModal(!modal);
   const toggle1 = () => setmodalCandidate(!modalCandidate);
+
+
+  //**** API Start ****// 
 
   const GetCandidates = async ()=>{
     let res = await axios.get("/candidate")
@@ -43,8 +50,20 @@ function Vote() {
 
   const GetVoters = async ()=>{
     let res = await axios.get("/voter")
-    setCandidaetList(res.data.data)
+    setcandidateList(res.data.data)
   }
+
+  const AddVoter = async ()=>{
+    let res = await axios.post("/voter",selctedVoter)
+    setcandidateList(res.data.data)
+  }
+
+  const AddCandidate = async ()=>{
+    let res = await axios.post("/candidate",selctedVoter)
+    setcandidateList(res.data.data)
+  }
+
+  //**** API End ****// 
 
   useEffect(()=>{
     GetCandidates()
@@ -54,14 +73,14 @@ function Vote() {
   return (
     <section>
       <Modal isOpen={modal} toggle={toggle}>
-        <ModalHeader toggle={toggle}>Modal title</ModalHeader>
+        <ModalHeader toggle={toggle}>Add Voter</ModalHeader>
         <ModalBody>
-          <Label for="exampleEmail">Name</Label>
+          <Label for="exampleEmail">Voter Name</Label>
           <Input
-            id="exampleEmail"
-            name="email"
+          onChange={(e)=>{setSelctedVoter({id:0,name:e.target.value})}}
+          value={selectedVoter.name}
             placeholder="Enter Voter Name"
-            type="email"
+            type="text"
           />
         </ModalBody>
         <ModalFooter>
@@ -76,12 +95,12 @@ function Vote() {
       <Modal isOpen={modalCandidate} toggle={toggle1}>
         <ModalHeader toggle={toggle1}>Modal title</ModalHeader>
         <ModalBody>
-          <Label for="exampleEmail">Name</Label>
+          <Label for="exampleEmail">Candidate Name</Label>
           <Input
-            id="exampleEmail"
-            name="email"
+             onChange={(e)=>{setSelectedcandidate({id:0,name:e.target.value})}}
+             value={selectedcandidate.name}
             placeholder="Enter Candidate Name"
-            type="email"
+            type="text"
           />
         </ModalBody>
         <ModalFooter>
@@ -109,7 +128,7 @@ function Vote() {
                 </tr>
               </thead>
               <tbody>
-                {candidaetList.map((item, index) => (
+                {candidateList.map((item, index) => (
                   <tr key={index}>
                     <td>{item.id}</td>
                     <td>{item.name}</td>
